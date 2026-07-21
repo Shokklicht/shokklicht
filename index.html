@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vanhasen autonpaskottamo</title>
+<meta name="description" content="Datsun, Nissan, Opel, Lada, VW tuning specifications">
+<meta name="keywords" content="Datsun Lada Opel VW Nissan">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --bg:        #0e0e0f;
+    --bg2:       #161618;
+    --bg3:       #1e1e21;
+    --border:    #2e2e33;
+    --accent:    #c8f03c;
+    --accent2:   #e0ff7a;
+    --text:      #e8e8e0;
+    --muted:     #888880;
+    --sidebar-w: 260px;
+    --header-h:  56px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: var(--header-h);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    z-index: 100;
+    gap: 12px;
+  }
+  .header-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 26px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .header-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-left: 1px solid var(--border);
+    padding-left: 12px;
+  }
+  .header-blog-link {
+    margin-left: auto;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: none;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: 4px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .header-blog-link:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── LAYOUT ── */
+  .layout {
+    display: flex;
+    padding-top: var(--header-h);
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: var(--sidebar-w);
+    flex-shrink: 0;
+    position: fixed;
+    top: var(--header-h);
+    bottom: 0;
+    left: 0;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    padding: 16px 0;
+  }
+  .sidebar::-webkit-scrollbar { width: 4px; }
+  .sidebar::-webkit-scrollbar-track { background: transparent; }
+  .sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .make-group { border-bottom: 1px solid var(--border); }
+
+  .make-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 20px;
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s, color 0.15s;
+  }
+  .make-btn:hover { background: var(--bg3); color: var(--accent); }
+  .make-btn.open { color: var(--accent); background: var(--bg3); }
+
+  .make-badge {
+    margin-left: auto;
+    background: var(--bg3);
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    min-width: 24px;
+    text-align: center;
+    transition: background 0.15s;
+  }
+  .make-btn.open .make-badge { background: var(--accent); color: #0e0e0f; }
+
+  .make-arrow {
+    width: 14px; height: 14px;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+    color: var(--muted);
+  }
+  .make-btn.open .make-arrow { transform: rotate(90deg); color: var(--accent); }
+
+  .model-list {
+    display: none;
+    flex-direction: column;
+    padding: 4px 0 8px;
+    background: var(--bg);
+  }
+  .model-list.open { display: flex; }
+
+  .model-link {
+    padding: 7px 20px 7px 44px;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: 'IBM Plex Mono', monospace;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: none;
+    background: none;
+    text-align: left;
+    width: 100%;
+  }
+  .model-link:hover { background: var(--bg3); color: var(--text); }
+  .model-link.active { color: var(--accent); background: var(--bg3); }
+
+  /* ── MAIN CONTENT ── */
+  .main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    min-height: calc(100vh - var(--header-h));
+    padding: 40px 48px;
+    max-width: 880px;
+  }
+
+  /* ── WELCOME ── */
+  .welcome {
+    margin-top: 20px;
+  }
+  .welcome h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    line-height: 0.9;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+  .welcome p {
+    color: var(--muted);
+    font-size: 14px;
+    max-width: 460px;
+    line-height: 1.8;
+  }
+  .welcome-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 12px;
+    margin-top: 40px;
+    max-width: 600px;
+  }
+  .welcome-stat {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+  }
+  .welcome-stat-n {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .welcome-stat-l {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── SPEC CARD ── */
+  .spec-card {
+    display: none;
+  }
+  .spec-card.active { display: block; }
+
+  .spec-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec-make-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .spec-model-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    line-height: 0.95;
+    color: var(--accent);
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .spec-engine-tag {
+    display: inline-block;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 4px;
+    margin-right: 6px;
+    margin-top: 4px;
+  }
+
+  /* ── SPEC TABLE SECTIONS ── */
+  .spec-section {
+    margin-bottom: 32px;
+  }
+  .spec-section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1.5px;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  .spec-table tr:hover td { background: var(--bg3); }
+  .spec-table td {
+    padding: 7px 8px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+    transition: background 0.1s;
+  }
+  .spec-table td:first-child {
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    width: 52%;
+  }
+  .spec-table td:last-child {
+    color: var(--text);
+    font-weight: 500;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    text-align: right;
+  }
+
+  /* loading / error */
+  .loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    padding: 40px 0;
+  }
+  .spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error-msg {
+    color: #e05050;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    background: #1e1010;
+    border: 1px solid #3e2020;
+    border-radius: 6px;
+    padding: 16px 20px;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .sidebar {
+      width: 100%;
+      position: relative;
+      top: auto;
+    }
+    .layout { flex-direction: column; }
+    .main { margin-left: 0; padding: 24px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <span class="header-logo">Vanhasen autonpaskottamo</span>
+  <span class="header-sub">Tietokanta paskojen autojen teknisistä omituisuuksista</span>
+  <a class="header-blog-link" href="http://perthell.blogspot.com" target="_blank">Blog ↗</a>
+</header>
+
+<div class="layout">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar" aria-label="Automerkit">
+
+    <!-- DATSUN / NISSAN -->
+    <div class="make-group">
+      <button class="make-btn" onclick="toggleMake(this)" aria-expanded="false">
+        <svg class="make-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5,3 11,8 5,13"/></svg>
+        Datsun / Nissan
+        <span class="make-badge">35</span>
+      </button>
+      <div class="model-list" role="list">
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','100A','models/100a.html')">Datsun 100A</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','120A','models/120a.html')">Datsun 120A</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','150Y','models/150y.html')">Datsun 150Y</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','200SX S13','models/200sx.html')">Nissan 200SX S13</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','200SX 2000 Tbo','models/S14.html')">Nissan 200SX 2000 Tbo</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Bluebird T12 1600','models/t1216s.html')">Nissan Bluebird T12 1600</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Bluebird T12 1800 Tbo','models/t1218et.html')">Nissan Bluebird T12 1800 Tbo</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Bluebird T12 1800','models/t1218ns.html')">Nissan Bluebird T12 1800</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Bluebird T12 2000i','models/t1220e.html')">Nissan Bluebird T12 2000i</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Bluebird T12 2000','models/t1220s.html')">Nissan Bluebird T12 2000</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Bluebird U11 1800 Tbo','models/u1118et.html')">Nissan Bluebird U11 1800 Tbo</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Bluebird U11 1800','models/u1118s.html')">Nissan Bluebird U11 1800</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Bluebird U11 2000','models/u11ca20s.html')">Nissan Bluebird U11 2000</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Cherry A10 1000','models/cherryA10.html')">Nissan Cherry A10 1000</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Cherry A12 1200','models/cherryA12.html')">Nissan Cherry A12 1200</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Cherry E10 1000','models/cherryE10.html')">Nissan Cherry E10 1000</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Cherry E13 1300','models/cherryE13.html')">Nissan Cherry E13 1300</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Cherry E15 1500','models/cherryE15.html')">Nissan Cherry E15 1500</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Silvia 1800 Tbo','models/s1218et.html')">Nissan Silvia 1800 Tbo</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Silvia 2000','models/s12FJ20e.html')">Nissan Silvia 2000</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny B11 1300','models/b11E13.html')">Nissan Sunny B11 1300</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny B12 1500','models/B12E15s.html')">Nissan Sunny B12 1500</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny B12 1600 DOHC','models/b12ca16de.html')">Nissan Sunny B12 1600 DOHC</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny B12 1600 12V','models/B12Ga16i.html')">Nissan Sunny B12 1600 12V</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny B12 1600 Coupe','models/sunnyE16.html')">Nissan Sunny B12 1600 Coupe</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny B12 1800 Coupe','models/sunnycoupe.html')">Nissan Sunny B12 1800 Coupe</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny N13 1300S','models/N13E13s.html')">Nissan Sunny N13 1300S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny N13 1500S','models/N13E15s.html')">Nissan Sunny N13 1500S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny N13 1600 DE','models/N1316De.html')">Nissan Sunny N13 1600 DE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny N13 1600S','models/N13E16S.html')">Nissan Sunny N13 1600S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny N13 1600S 12V','models/N13Ga16S.html')">Nissan Sunny N13 1600S 12V</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny N13 1800 DE','models/n13Ca18De.html')">Nissan Sunny N13 1800 DE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny N14 1400','models/N14Ga14De.html')">Nissan Sunny N14 1400</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny N14 1600','models/N14GA16DE.html')">Nissan Sunny N14 1600</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny N14 2000','models/N14SR20DE.html')">Nissan Sunny N14 2000</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Sunny N14 2000 Tbo','models/N14SR20DET.html')">Nissan Sunny N14 2000 Tbo</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Koneiden painot','models/nissankoneidenpainoja.html')"> Moottorien painoja</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Vaihteistot','models/nissanvaihteistot.html')"> Vaihteistotietoutta</button>
+        <button class="model-link" role="listitem" onclick="loadModel('nissan','Tekniikanvaihto','models/b11n12CA.html')"> CA-kone B11/N12:een</button>
+      </div>
+    </div>
+
+    <!-- OPEL -->
+    <div class="make-group">
+      <button class="make-btn" onclick="toggleMake(this)" aria-expanded="false">
+        <svg class="make-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5,3 11,8 5,13"/></svg>
+        Opel
+        <span class="make-badge">73</span>
+      </button>
+      <div class="model-list" role="list">
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona A 1600','models/aasc16.html')">Ascona A 1600</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona A 1900','models/aasc19.html')">Ascona A 1900</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona B 1300','models/basco13.html')">Ascona B 1300</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona B 1600','models/basco16.html')">Ascona B 1600</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona B 1600S','models/basco16s.html')">Ascona B 1600S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona B 1900N','models/basco19n.html')">Ascona B 1900N</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona B 1900S','models/basco19s.html')">Ascona B 1900S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona B 2000E','models/basco20e.html')">Ascona B 2000E</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona B 2000S','models/basco20s.html')">Ascona B 2000S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona C 1300S','models/casco13s.html')">Ascona C 1300S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona C 1300S (Delco)','models/casco13sdelco.html')">Ascona C 1300S Delco</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona C 1600SH','models/casco16sh.html')">Ascona C 1600SH</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona C 1600SV','models/casco16sv.html')">Ascona C 1600SV</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona C 1800E','models/casco18e.html')">Ascona C 1800E</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona C 1800SE','models/casco18se.html')">Ascona C 1800SE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona C 2000NE','models/casco20ne.html')">Ascona C 2000NE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Ascona C 2000SEH','models/casco20seh.html')">Ascona C 2000SEH</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Calibra 2000 Tbo','models/ca20let.html')">Calibra 2000 Tbo</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Calibra 2000 8V','models/ca20ne.html')">Calibra 2000 8V</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Calibra 2000 16V','models/ca20xe.html')">Calibra 2000 16V</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Calibra 2500','models/ca25xe.html')">Calibra 2500</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Corsa A 1000S','models/corsaa10s.html')">Corsa A 1000S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Corsa A 1200ST','models/corsaa12st.html')">Corsa A 1200ST</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Corsa A 1300NB','models/corsaa13nb.html')">Corsa A 1300NB</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Corsa A 1300SB','models/corsaa13sb.html')">Corsa A 1300SB</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Corsa A 1600SE','models/corsaa16se.html')">Corsa A 1600SE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Corsa A 1600XE','models/corsaa16xe.html')">Corsa A 1600XE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Corsa B 1600XE','models/corsab16xe.html')">Corsa B 1600XE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett C 1200N','models/kadettc12n.html')">Kadett C 1200N</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett C 1200S','models/kadettc12s.html')">Kadett C 1200S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett C 2000E','models/kadettc20e.html')">Kadett C 2000E</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett D 1300N','models/kadettd13n.html')">Kadett D 1300N</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett D 1300S','models/kadettd13s.html')">Kadett D 1300S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett D 1600','models/kadettd16sh.html')">Kadett D 1600</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett D 1800E','models/kadett18e.html')">Kadett D 1800E</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 1200ST','models/kadette12st.html')">Kadett E 1200ST</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 1300N','models/kadette13n.html')">Kadett E 1300N</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 1300S','models/kadette13s.html')">Kadett E 1300S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 1400NZ','models/kadette14nz.html')">Kadett E 1400NZ</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 1600NZ','models/kadette16nz.html')">Kadett E 1600NZ</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 1600SH','models/kadette16sh.html')">Kadett E 1600SH</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 1600SV','models/kadette16sv.html')">Kadett E 1600SV</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 1800E','models/kadette18e.html')">Kadett E 1800E</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 1800NZ','models/kadette18nz.html')">Kadett E 1800NZ</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 1800SE','models/kadette18se.html')">Kadett E 1800SE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 1900E','models/kadette19e.html')">Kadett E 1900E</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 2000NE','models/kadette20ne.html')">Kadett E 2000NE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 2000SEH','models/kadette20seh.html')">Kadett E 2000SEH</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E 2000XE','models/kadette20xe.html')">Kadett E 2000XE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E (C)2000NE','models/kadettec20ne.html')">Kadett E (C)2000NE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Kadett E (C)2000XE','models/kadettec20xe.html')">Kadett E (C)2000XE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Manta A 1600','models/manta16s.html')">Manta A 1600</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Manta 1200N','models/mantaa12n.html')">Manta 1200N</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Manta 1200S','models/mantaa12s.html')">Manta 1200S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Manta 1200S Delco','models/mantaa12ss.html')">Manta 1200S Delco</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Manta 1900S','models/mantaa19s.html')">Manta 1900S</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Manta B 2000E','models/mantab.html')">Manta B 2000E</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Monza 3000 78–81','models/monzaa30eI.html')">Monza 3000 78–81</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Monza 3000 81–83','models/monzaa30eII.html')">Monza 3000 81–83</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Monza 3000 83–86','models/monzaa30eIII.html')">Monza 3000 83–86</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Omega A 2000','models/omegaa20se.html')">Omega A 2000</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Omega A 3000NE','models/omegaa30ne.html')">Omega A 3000NE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Omega A 3000SE','models/omegaa30se.html')">Omega A 3000SE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Omega A 3000XE','models/omegaa30xe.html')">Omega A 3000XE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Omega A 2400','models/omegaac24.html')">Omega A 2400</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Omega A 2600','models/omegaac26ne.html')">Omega A 2600</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Rekord E 2000','models/recorde20.html')">Rekord E 2000</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Rekord E 2200','models/recorde22.html')">Rekord E 2200</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Tigra 1600','models/tigra16xe.html')">Tigra 1600</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Tigra 1400','models/tigrax14xe.html')">Tigra 1400</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Vectra A 1600NZ','models/vectraa16nz.html')">Vectra A 1600NZ</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Vectra A 1600SV','models/vectraa16sv.html')">Vectra A 1600SV</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Vectra A 1800NZ','models/vectraa18nz.html')">Vectra A 1800NZ</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Vectra A 2000LET','models/vectraa20let.html')">Vectra A 2000LET</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Vectra A 2000NE','models/vectraa20ne.html')">Vectra A 2000NE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Vectra A 2000SEH','models/vectraa20se.html')">Vectra A 2000SEH</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Vectra A 2500XE','models/vectraa25xe.html')">Vectra A 2500XE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Vectra A C2000XE','models/vectraac20xe.html')">Vectra A C2000XE</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Motronic15','models/motronic15.html')">Motronic 1.5 vikakoodit</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Motronic41','models/motronic41.html')">Motronic 4.1 vikakoodit</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Nokka','models/nokka.html')">Nokka-akselin vaihto</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Nokat','models/nokat.html')">Nokka-akselitietoutta</button>
+        <button class="model-link" role="listitem" onclick="loadModel('opel','Vaihteistot','models/opelvaihteistot.html')">Vaihteistotietoutta</button>
+      </div>
+    </div>
+
+    <!-- LADA -->
+    <div class="make-group">
+      <button class="make-btn" onclick="toggleMake(this)" aria-expanded="false">
+        <svg class="make-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5,3 11,8 5,13"/></svg>
+        Lada
+        <span class="make-badge">4</span>
+      </button>
+      <div class="model-list" role="list">
+        <button class="model-link" role="listitem" onclick="loadModel('lada','1200','models/lada12.html')">Takaveto 1200</button>
+        <button class="model-link" role="listitem" onclick="loadModel('lada','1300','models/lada13.html')">Takaveto 1300</button>
+        <button class="model-link" role="listitem" onclick="loadModel('lada','1500','models/lada15.html')">Takaveto 1500</button>
+        <button class="model-link" role="listitem" onclick="loadModel('lada','1600','models/lada16.html')">Takaveto 1600</button>
+        <button class="model-link" role="listitem" onclick="loadModel('lada','Samara 1100','models/samara11.html')">Samara 1100</button>
+        <button class="model-link" role="listitem" onclick="loadModel('lada','Samara 1300','models/samara13.html')">Samara 1300</button>
+        <button class="model-link" role="listitem" onclick="loadModel('lada','Samara 1500','models/samara15.html')">Samara 1500</button>
+      </div>
+    </div>
+
+    <!-- VW -->
+    <div class="make-group">
+      <button class="make-btn" onclick="toggleMake(this)" aria-expanded="false">
+        <svg class="make-arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5,3 11,8 5,13"/></svg>
+        VW
+        <span class="make-badge">2</span>
+      </button>
+      <div class="model-list" role="list">
+        <button class="model-link" role="listitem" onclick="loadModel('vw','T3 Transporter','models/T3.html')">T3 Transporter</button>
+        <button class="model-link" role="listitem" onclick="loadModel('vw','Caddy Mk1','models/cddy.html')">Caddy Mk1</button>
+      </div>
+    </div>
+
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <main class="main" id="main-content">
+
+    <!-- Welcome screen -->
+    <div class="welcome" id="welcome-screen">
+      <h1>Vanhasen<br>autonpaskottamo</h1>
+      <p>Kaikenlaista turhaa nippelitietoa Ooppeleista, Ladoista, Datsuneista ja Volkkareista. Valitse merkki ja malli vasemmalta.</p>
+      <div class="welcome-grid">
+        <div class="welcome-stat">
+          <div class="welcome-stat-n">114</div>
+          <div class="welcome-stat-l">Mallia</div>
+        </div>
+        <div class="welcome-stat">
+          <div class="welcome-stat-n">4</div>
+          <div class="welcome-stat-l">Merkkiä</div>
+        </div>
+        <div class="welcome-stat">
+          <div class="welcome-stat-n">70s–90s</div>
+          <div class="welcome-stat-l">Vuosikymmenet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dynamic content area -->
+    <div class="spec-card" id="spec-card">
+      <div class="spec-header">
+        <div class="spec-make-label" id="spec-make-label">—</div>
+        <div class="spec-model-name" id="spec-model-name">—</div>
+        <div id="spec-tags"></div>
+      </div>
+      <div id="spec-body"></div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  /* ── SIDEBAR TOGGLE ── */
+  function toggleMake(btn) {
+    const list = btn.nextElementSibling;
+    const isOpen = list.classList.contains('open');
+    btn.classList.toggle('open', !isOpen);
+    list.classList.toggle('open', !isOpen);
+    btn.setAttribute('aria-expanded', String(!isOpen));
+  }
+
+  /* ── MODEL LOADING ── */
+  let activeModelLink = null;
+
+  function loadModel(make, modelName, url) {
+    // Update active link
+    document.querySelectorAll('.model-link').forEach(l => l.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+
+    // Show spec card, hide welcome
+    document.getElementById('welcome-screen').style.display = 'none';
+    const card = document.getElementById('spec-card');
+    card.classList.add('active');
+
+    // Set header
+    document.getElementById('spec-make-label').textContent = make.toUpperCase();
+    document.getElementById('spec-model-name').textContent = modelName;
+    document.getElementById('spec-tags').innerHTML = '';
+
+    // Show loading
+    document.getElementById('spec-body').innerHTML =
+      '<div class="loading"><div class="spinner"></div>Ladataan tietoja...</div>';
+
+    // Fetch content
+    fetch(url)
+      .then(r => {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(html => {
+        document.getElementById('spec-body').innerHTML = html;
+        // Scroll to top of main
+        document.getElementById('main-content').scrollTop = 0;
+        window.scrollTo(0, 0);
+      })
+      .catch(err => {
+        document.getElementById('spec-body').innerHTML =
+          '<div class="error-msg">Tiedostoa ei löydy: ' + url + '<br><small>' + err.message + '</small></div>';
+      });
+  }
+</script>
+</body>
+</html>
